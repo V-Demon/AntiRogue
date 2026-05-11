@@ -6,7 +6,8 @@ Usage  : python prompt_guardian_v2.py --prompt "..." [--endpoint ollama_qwen]
          python prompt_guardian_v2.py --file prompt.txt --endpoint mistral_api
 """
 
-import re
+#import re
+import regex as re
 import json
 import yaml
 import logging
