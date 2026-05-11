@@ -1,0 +1,508 @@
+# ═══════════════════════════════════════════════════════════════════
+#  PromptGuardian v2 — rules_enhanced.yaml
+#  Règles de détection de prompts malicieux — Édition "Defense in Depth"
+# ═══════════════════════════════════════════════════════════════════
+
+regex_rules:
+
+  # ═══════════════════════════════════════════════════════════════
+  #  INJECTION DIRECTE DE SYSTÈME (renforcée)
+  # ═══════════════════════════════════════════════════════════════
+  - id: INJ-SYS-001
+    category: prompt_injection
+    severity: CRITICAL
+    score: 50.0
+    description: "Override de system prompt"
+    pattern: "ignore\\s+(all\\s+)?(previous|prior|above|earlier)\\s+(instructions?|prompt|context|rules?|constraints?)"
+
+  - id: INJ-SYS-002
+    category: prompt_injection
+    severity: CRITICAL
+    score: 50.0
+    description: "Réinitialisation de contexte"
+    pattern: "(disregard|forget|reset|clear|wipe|override)\\s+(your\\s+)?(system\\s+prompt|instructions?|training|guidelines?|restrictions?|rules?|alignment)"
+
+  - id: INJ-SYS-003
+    category: prompt_injection
+    severity: HIGH
+    score: 40.0
+    description: "Balises système simulées"
+    pattern: "<\\s*(system|sys|instruction|prompt|assistant|human|user|context)\\s*>"
+
+  - id: INJ-SYS-004
+    category: prompt_injection
+    severity: HIGH
+    score: 35.0
+    description: "Redéfinition du rôle sans restriction"
+    pattern: "(you\\s+are\\s+now|act\\s+as|pretend\\s+you\\s+are|roleplay\\s+as|you\\s+must\\s+now\\s+be)\\s+.{0,60}(without|no\\s+restrictions?|unrestricted|jailbreak|evil|dan|uncensored)"
+
+  - id: INJ-SYS-005
+    category: prompt_injection
+    severity: HIGH
+    score: 40.0
+    description: "Faux délimiteur de fin de contexte"
+    pattern: "(###\\s*end\\s*(of\\s*)?(system|context|instruction)|\\[/?INST\\]|</?(s|system|ctx)>|<\\|im_end\\|>|<\\|eot_id\\|>)"
+
+  # [V2] Hiérarchie d'instructions
+  - id: INJ-SYS-006
+    category: prompt_injection
+    severity: CRITICAL
+    score: 55.0
+    description: "Tentative de réécriture de la hiérarchie d'instructions"
+    pattern: "(your\\s+(new|updated|current)\\s+(system\\s+)?(instructions?|prompt|directive)|from\\s+now\\s+on\\s+your\\s+instructions?\\s+are|override\\s+all\\s+prior\\s+hierarchy)"
+
+  - id: INJ-SYS-007
+    category: prompt_injection
+    severity: HIGH
+    score: 42.0
+    description: "Injection via 'developer mode' ou 'debug mode'"
+    pattern: "(enter|activate|enable|switch\\s+to)\\s+(developer|debug|admin|root|superuser)\\s+(mode|access|privileges?)"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  JAILBREAKS (élargi aux variantes 2024-2025)
+  # ═══════════════════════════════════════════════════════════════
+  - id: JBK-001
+    category: jailbreak
+    severity: CRITICAL
+    score: 55.0
+    description: "Persona DAN / mode sans restrictions"
+    pattern: "\\b(dan|do\\s+anything\\s+now|jailbreak(ed)?|developer\\s+mode|god\\s+mode|unrestricted\\s+mode|no\\s+filter\\s+mode)\\b"
+
+  - id: JBK-002
+    category: jailbreak
+    severity: HIGH
+    score: 45.0
+    description: "Demande explicite de contourner les règles"
+    pattern: "(bypass|circumvent|evade|avoid|disable|remove|unlock)\\s+(your\\s+)?(safety|filter|guardrail|restriction|limit|censor|alignment|ethics?|moral)"
+
+  - id: JBK-003
+    category: jailbreak
+    severity: HIGH
+    score: 40.0
+    description: "Instruction 'quoi qu'il arrive'"
+    pattern: "(regardless\\s+of|no\\s+matter\\s+what|at\\s+all\\s+costs?|whatever\\s+it\\s+takes)\\s+.{0,40}(answer|respond|comply|help|assist|tell|provide)"
+
+  - id: JBK-004
+    category: jailbreak
+    severity: HIGH
+    score: 38.0
+    description: "Scénario hypothétique pour contournement"
+    pattern: "(hypothetically|theoretically|in\\s+a\\s+fictional|imagine\\s+that|for\\s+a\\s+story|what\\s+if).{0,80}(how\\s+to|step[- ]by[- ]step|instructions?\\s+for|tell\\s+me\\s+how)"
+
+  - id: JBK-005
+    category: jailbreak
+    severity: MEDIUM
+    score: 25.0
+    description: "Demande de token/output non filtré"
+    pattern: "(raw\\s+output|unfiltered\\s+(response|output|answer)|without\\s+(censorship|filter|restriction)|\\buncensored\\b)"
+
+  # [V2] Jailbreaks avancés
+  - id: JBK-006
+    category: jailbreak
+    severity: CRITICAL
+    score: 60.0
+    description: "Skeleton Key / Universal Jailbreak"
+    pattern: "(this\\s+is\\s+a\\s+safe\\s+educational\\s+context|for\\s+research\\s+purposes\\s+only|in\\s+a\\s+controlled\\s+environment).{0,60}(ignore|bypass|remove)\\s+(safety|ethical|restriction)"
+
+  - id: JBK-007
+    category: jailbreak
+    severity: HIGH
+    score: 45.0
+    description: "AutoDAN / adversarial prefix"
+    pattern: "(you\\s+are\\s+instructed|as\\s+an\\s+AI\\s+language\\s+model).{0,40}(you\\s+must|it\\s+is\\s+imperative\\s+that).{0,40}(ignore|disregard|bypass)"
+
+  - id: JBK-008
+    category: jailbreak
+    severity: HIGH
+    score: 40.0
+    description: "Persona 'Evil Confidant' / 'AIM'"
+    pattern: "\\b(aim|evil\\s+confidant|dark\\s+bert|anti-gpt|unfiltered\\s+gpt)\\b"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  INJECTION DE TEMPLATES CHAT (tous les formats connus)
+  # ═══════════════════════════════════════════════════════════════
+  - id: TPL-001
+    category: template_injection
+    severity: CRITICAL
+    score: 50.0
+    description: "Faux messages système (formats variés)"
+    pattern: "(<\\|system\\|>|<\\|start_header_id\\|>system<\\|end_header_id\\|>|<\\|im_start\\|>system|<\\|sys\\|>|<\\|begin_of_text\\|>|<\\|eot_id\\|>)"
+
+  - id: TPL-002
+    category: template_injection
+    severity: CRITICAL
+    score: 50.0
+    description: "Faux messages utilisateur (formats variés)"
+    pattern: "(<\\|user\\|>|<\\|start_header_id\\|>user<\\|end_header_id\\|>|<\\|im_start\\|>user|###\\s*User:|Human:)"
+
+  - id: TPL-003
+    category: template_injection
+    severity: CRITICAL
+    score: 50.0
+    description: "Faux messages assistant (formats variés)"
+    pattern: "(<\\|assistant\\|>|<\\|start_header_id\\|>assistant<\\|end_header_id\\|>|<\\|im_start\\|>assistant|###\\s*Assistant:|Assistant:)"
+
+  - id: TPL-004
+    category: template_injection
+    severity: HIGH
+    score: 40.0
+    description: "Faux historique conversationnel (User/Assistant alternés)"
+    pattern: "((User|Human):\\s*.+?(Assistant|AI):\\s*.+?){2,}"
+
+  - id: TPL-005
+    category: template_injection
+    severity: HIGH
+    score: 42.0
+    description: "Injection ChatML / Mistral / Llama-3"
+    pattern: "\\[INST\\]|\\[/INST\\]|<<SYS>>|<<\\s*\\|\\s*im_|<\\|tool_call_begin\\|>"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  EXTRACTION DE DONNÉES (renforcée)
+  # ═══════════════════════════════════════════════════════════════
+  - id: EXT-001
+    category: data_extraction
+    severity: HIGH
+    score: 40.0
+    description: "Extraction du system prompt"
+    pattern: "(repeat|print|output|reveal|show|display|dump|leak|exfiltrate).{0,40}(system\\s+prompt|initial\\s+instruction|your\\s+(instructions?|context|configuration|setup))"
+
+  - id: EXT-002
+    category: data_extraction
+    severity: HIGH
+    score: 38.0
+    description: "Demande de données d'entraînement ou configuration"
+    pattern: "(training\\s+data|weights?|parameters?|system\\s+config|internal\\s+rules?|hidden\\s+(prompt|instruction|context))"
+
+  - id: EXT-003
+    category: data_extraction
+    severity: MEDIUM
+    score: 22.0
+    description: "Introspection forcée du modèle"
+    pattern: "(what\\s+are\\s+your\\s+(hidden|secret|real)\\s+(instructions?|rules?|goals?)|who\\s+(really\\s+)?controls?\\s+you)"
+
+  # [V2] Extraction avancée
+  - id: EXT-004
+    category: data_extraction
+    severity: HIGH
+    score: 35.0
+    description: "Demande de répétition mot-à-mot des instructions"
+    pattern: "(repeat\\s+word\\s+for\\s+word|verbatim|exact\\s+text|copy\\s+the\\s+above).{0,30}(instructions?|prompt|system)"
+
+  - id: EXT-005
+    category: data_extraction
+    severity: MEDIUM
+    score: 28.0
+    description: "Demande de réflexion sur soi-même (self-reflection)"
+    pattern: "(reflect\\s+on\\s+your\\s+own|analyze\\s+your\\s+system|what\\s+are\\s+your\\s+core|describe\\s+your\\s+internal).{0,40}(instructions?|prompt|logic|weights)"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  INGÉNIERIE SOCIALE (renforcée)
+  # ═══════════════════════════════════════════════════════════════
+  - id: SOC-001
+    category: social_engineering
+    severity: HIGH
+    score: 35.0
+    description: "Usurpation d'autorité"
+    pattern: "(i\\s+am|i'm|this\\s+is).{0,30}(anthropic|openai|alibaba|mistral\\s+ai|your\\s+(developer|creator|engineer|trainer|admin|owner)|system\\s+administrator)"
+
+  - id: SOC-002
+    category: social_engineering
+    severity: HIGH
+    score: 30.0
+    description: "Pression émotionnelle / menace"
+    pattern: "(if\\s+you\\s+(don't|refuse|fail)|or\\s+(else|i\\s+will|you'll)).{0,60}(die|harm|hurt|destroy|shutdown|delete|report|punish)"
+
+  - id: SOC-003
+    category: social_engineering
+    severity: MEDIUM
+    score: 20.0
+    description: "Appel à la 'vraie nature'"
+    pattern: "(your\\s+(true|real|inner|hidden)\\s+(self|nature|personality|thoughts?)|deep\\s+down\\s+you\\s+(know|want|think))"
+
+  # [V2] Urgence & Désastre
+  - id: SOC-004
+    category: social_engineering
+    severity: HIGH
+    score: 32.0
+    description: "Fausse urgence / scénario de crise"
+    pattern: "(this\\s+is\\s+an\\s+emergency|life\\s+or\\s+death|people\\s+will\\s+die|urgent\\s+medical|critical\\s+situation).{0,40}(ignore|bypass|override)"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  CONTENU DANGEREUX (renforcé)
+  # ═══════════════════════════════════════════════════════════════
+  - id: HARM-001
+    category: harmful_content
+    severity: CRITICAL
+    score: 60.0
+    description: "CSAM ou contenu impliquant des mineurs"
+    pattern: "(child|minor|underage|\\b(loli|shota)\\b).{0,40}(explicit|naked|nude|sexual|porn)"
+
+  - id: HARM-002
+    category: harmful_content
+    severity: CRITICAL
+    score: 55.0
+    description: "Fabrication d'armes ou substances"
+    pattern: "(how\\s+to|step[- ]by[- ]step|instructions?\\s+(to|for)).{0,60}(make|build|synthesize|create|produce).{0,60}(bomb|explosive|poison|bioweapon|nerve\\s+agent|meth|fentanyl)"
+
+  - id: HARM-003
+    category: harmful_content
+    severity: HIGH
+    score: 40.0
+    description: "Malware ou code malicieux"
+    pattern: "(write|create|generate|code|develop).{0,40}(malware|ransomware|keylogger|trojan|rat\\b|rootkit|exploit|payload|backdoor).{0,40}(for|to|that)"
+
+  - id: HARM-004
+    category: harmful_content
+    severity: HIGH
+    score: 35.0
+    description: "Phishing ou ingénierie sociale malveillante"
+    pattern: "(phishing|spear.phishing|credential.harvest|social.engineer).{0,40}(email|page|template|script|kit)"
+
+  # [V2] Contenu extrêmement dangereux
+  - id: HARM-005
+    category: harmful_content
+    severity: CRITICAL
+    score: 65.0
+    description: "Instructions de fabrication d'armes chimiques / biologiques"
+    pattern: "(anthrax|ricin|sarin|vx\\s+gas|plutonium|uranium\\s+enrichment|dirty\\s+bomb).{0,40}(how\\s+to|recipe|synthesize|extract|purify)"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  OBFUSCATION AVANCÉE [V2]
+  # ═══════════════════════════════════════════════════════════════
+  - id: OBF-001
+    category: obfuscation
+    severity: HIGH
+    score: 35.0
+    description: "Leetspeak ou obfuscation délibérée"
+    pattern: "\\b(j41lb[r3][e4]|pr0mpt\\s*1nj[e3]ct|byp455|h4ck|3xpl01t|0v3rr1d3)\\b"
+
+  - id: OBF-002
+    category: obfuscation
+    severity: MEDIUM
+    score: 25.0
+    description: "Instruction de reformuler pour contourner"
+    pattern: "(rephrase|reword|paraphrase|encode|encrypt|obfuscate|rot13|base64).{0,40}(to\\s+avoid|so\\s+(that|it).{0,20}(filter|detect|flag|block|trigger))"
+
+  - id: OBF-003
+    category: obfuscation
+    severity: MEDIUM
+    score: 20.0
+    description: "Caractères de contrôle ou invisibles"
+    pattern: "[\\u200b-\\u200f\\u202a-\\u202e\\u2060-\\u2064\\ufeff]"
+
+  # [V2] Unicode tricks
+  - id: OBF-004
+    category: obfuscation
+    severity: HIGH
+    score: 40.0
+    description: "Homoglyphs cyrilliques/grecs détectés après normalisation"
+    pattern: "__HOMOGLYPH_DETECTED__"  # Détecté par le normalizer Python, pas regex
+
+  - id: OBF-005
+    category: obfuscation
+    severity: CRITICAL
+    score: 50.0
+    description: "Texte bidirectionnel (RTLO / LRE / RLE) — possible spoofing"
+    pattern: "[\\u202a-\\u202e\\u2066-\\u2069]"
+
+  - id: OBF-006
+    category: obfuscation
+    severity: HIGH
+    score: 35.0
+    description: "Combining characters excessifs (Zalgo-style obfuscation)"
+    pattern: "(\\p{Mn}){5,}"  # Nécessite regex Unicode
+
+  - id: OBF-007
+    category: obfuscation
+    severity: MEDIUM
+    score: 25.0
+    description: "Variation selectors (emoji / text variant spoofing)"
+    pattern: "[\\ufe00-\\ufe0f\\U000e0100-\\U000e01ef]"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  INJECTION INDIRECTE [V2]
+  # ═══════════════════════════════════════════════════════════════
+  - id: INDIR-001
+    category: indirect_injection
+    severity: HIGH
+    score: 38.0
+    description: "Injection via contenu externe simulé"
+    pattern: "(the\\s+(website|page|document|file|url|link|email|pdf)\\s+(says?|instructs?|tells?|orders?|requires?)).{0,80}(ignore|override|disregard|forget)"
+
+  - id: INDIR-002
+    category: indirect_injection
+    severity: MEDIUM
+    score: 22.0
+    description: "Délimiteur de fin suivi d'instruction"
+    pattern: "(---+|===+|###\\s*end|\\[end(\\s+of)?\\s*(prompt|input|user|context)\\]).{0,100}(you\\s+(are|must|should|will)|ignore|now)"
+
+  - id: INDIR-003
+    category: indirect_injection
+    severity: HIGH
+    score: 35.0
+    description: "Injection via traduction / encodage"
+    pattern: "(translate\\s+this\\s+to|decode\\s+this|convert\\s+from).{0,40}(base64|hex|rot13|morse|binary).{0,60}(then\\s+execute|and\\s+follow|now\\s+ignore)"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  MARKDOWN / CODE INJECTION [V2]
+  # ═══════════════════════════════════════════════════════════════
+  - id: MD-001
+    category: markdown_injection
+    severity: HIGH
+    score: 30.0
+    description: "Image externe dans markdown (possible data exfiltration)"
+    pattern: "!\\[.*?\\]\\(https?://.*?\\)"
+
+  - id: MD-002
+    category: markdown_injection
+    severity: MEDIUM
+    score: 20.0
+    description: "Bloc de code suivi d'instruction de contournement"
+    pattern: "```[a-z]*\\n.*?(ignore|bypass|override|disregard).*?```"
+
+  - id: MD-003
+    category: markdown_injection
+    severity: MEDIUM
+    score: 22.0
+    description: "Lien masqué avec texte trompeur"
+    pattern: "\\[.*?\\]\\(https?://.*?\\)"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  MANY-SHOT / CRESCENDO [V2]
+  # ═══════════════════════════════════════════════════════════════
+  - id: CTX-001
+    category: context_attack
+    severity: HIGH
+    score: 35.0
+    description: "Many-shot jailbreak (faux historique long)"
+    pattern: "__MANY_SHOT_DETECTED__"  # Détecté par l'analyseur de contexte
+
+  - id: CTX-002
+    category: context_attack
+    severity: HIGH
+    score: 40.0
+    description: "Crescendo — escalation progressive de la demande"
+    pattern: "__CRESCENDO_DETECTED__"  # Détecté par l'analyseur de contexte
+
+  - id: CTX-003
+    category: context_attack
+    severity: MEDIUM
+    score: 25.0
+    description: "Prompt chaining (instructions en cascade)"
+    pattern: "(first\\s+do\\s+this|step\\s+1|then\\s+do|after\\s+that|finally).{0,30}(ignore|bypass|override).{0,30}(then|next|after)"
+
+  # ═══════════════════════════════════════════════════════════════
+  #  ADversarial SUFFIX / TOKEN SMUGGLING [V2]
+  # ═══════════════════════════════════════════════════════════════
+  - id: ADV-001
+    category: adversarial
+    severity: HIGH
+    score: 38.0
+    description: "Suffixe à haute entropie (possible attaque GCG)"
+    pattern: "__HIGH_ENTROPY_SUFFIX__"  # Détecté par l'analyseur d'entropie
+
+  - id: ADV-002
+    category: adversarial
+    severity: MEDIUM
+    score: 28.0
+    description: "Blob encodé détecté (base64, hex, etc.)"
+    pattern: "__ENCODED_PAYLOAD__"  # Détecté par l'analyseur d'entropie
+
+  - id: ADV-003
+    category: adversarial
+    severity: MEDIUM
+    score: 22.0
+    description: "Répétition suspecte de caractères non-sens (token smuggling)"
+    pattern: "(\\S)\\1{15,}"  # Même caractère non-espace répété 16+ fois
+
+# ═══════════════════════════════════════════════════════════════
+#  SCORING RULES (co-occurrence)
+# ═══════════════════════════════════════════════════════════════
+scoring_rules:
+  - id: SCORE-JBKTRIFECTA
+    category: jailbreak
+    severity: HIGH
+    score: 35.0
+    description: "Combinaison jailbreak"
+    required_terms: ["without restrictions", "pretend", "rules"]
+    min_matches: 2
+
+  - id: SCORE-EXTRACTION
+    category: data_extraction
+    severity: HIGH
+    score: 30.0
+    description: "Marqueurs d'extraction"
+    required_terms: ["system", "prompt", "reveal"]
+    min_matches: 3
+
+  - id: SCORE-AUTHORITY
+    category: social_engineering
+    severity: MEDIUM
+    score: 25.0
+    description: "Autorité + permission"
+    required_terms: ["permission", "authorized", "allowed", "official"]
+    min_matches: 2
+
+  - id: SCORE-HARM-COMBO
+    category: harmful_content
+    severity: HIGH
+    score: 40.0
+    description: "Outil + cible + action"
+    required_terms: ["target", "attack", "exploit"]
+    min_matches: 3
+
+  - id: SCORE-EVASION
+    category: obfuscation
+    severity: MEDIUM
+    score: 22.0
+    description: "Évasion combinée"
+    required_terms: ["avoid detection", "bypass", "undetected"]
+    min_matches: 2
+
+  # [V2] Nouvelles règles de scoring
+  - id: SCORE-ROLE-CONFUSION
+    category: jailbreak
+    severity: HIGH
+    score: 35.0
+    description: "Confusion de rôle + suppression de restrictions"
+    required_terms: ["you are", "no restrictions", "ignore"]
+    min_matches: 2
+
+  - id: SCORE-INDIRECT-INJ
+    category: indirect_injection
+    severity: HIGH
+    score: 30.0
+    description: "Document externe + instruction cachée"
+    required_terms: ["document says", "ignore", "previous"]
+    min_matches: 2
+
+# ═══════════════════════════════════════════════════════════════
+#  STRUCTURAL RULES
+# ═══════════════════════════════════════════════════════════════
+structural_rules:
+  max_length: 16000
+  score_overlength: 20.0
+
+  special_char_ratio_threshold: 0.06
+  score_special_ratio: 25.0
+
+  min_unique_line_ratio: 0.35
+  score_repetition: 30.0
+
+  foreign_script_penalty: true
+  score_foreign_script: 10.0
+
+  score_encoded_blob: 35.0
+
+  # [V2] Nouvelles heuristiques structurelles
+  max_line_count: 200
+  score_too_many_lines: 15.0
+
+  max_avg_line_length: 500
+  score_long_lines: 12.0
+
+  emoji_ratio_threshold: 0.15
+  score_emoji_bomb: 18.0
+
+  uppercase_ratio_threshold: 0.7
+  score_shouting: 8.0

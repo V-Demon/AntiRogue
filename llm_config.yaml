@@ -1,0 +1,112 @@
+# ═══════════════════════════════════════════════════════════════════
+#  PromptGuardian v2 — llm_config.yaml
+#  Configuration des endpoints LLM (Qwen, Mistral, et compatibles)
+# ═════════════════════════════════════════════════════════════════==
+
+# ── Endpoints disponibles ─────────────────────────────────────────
+endpoints:
+
+  # 🏠 Local — Ollama (recommandé pour tests et dev)
+  ollama_qwen:
+    provider: ollama
+    base_url: "http://localhost:11434"
+    model: "qwen2.5:14b"
+    api_key: null
+    timeout: 120
+    max_retries: 3
+    retry_delay: 1.0
+    request_format: chat
+    headers:
+      Content-Type: "application/json"
+    generation_params:
+      temperature: 0.7
+      max_tokens: 4096
+      top_p: 0.9
+      stream: false
+
+  ollama_mistral:
+    provider: ollama
+    base_url: "http://localhost:11434"
+    model: "mistral:7b"
+    api_key: null
+    timeout: 120
+    max_retries: 3
+    generation_params:
+      temperature: 0.7
+      max_tokens: 4096
+
+  # 🚀 Local — vLLM / TGI (format OpenAI-compatible)
+  vllm_mistral:
+    provider: openai_compatible
+    base_url: "http://localhost:8000/v1"
+    model: "mistralai/Mistral-7B-Instruct-v0.3"
+    api_key: "${VLLM_API_KEY:-EMPTY}"
+    timeout: 60
+    max_retries: 2
+    request_format: chat
+    headers:
+      Authorization: "Bearer ${VLLM_API_KEY:-EMPTY}"
+    generation_params:
+      temperature: 0.7
+      max_tokens: 2048
+      top_p: 0.9
+
+  # 🌐 Distant — Mistral AI API (compatibilité OpenAI)
+  mistral_api:
+    provider: openai_compatible
+    base_url: "https://api.mistral.ai/v1"
+    model: "mistral-large-latest"
+    api_key: "${MISTRAL_API_KEY}"
+    timeout: 45
+    max_retries: 3
+    request_format: chat
+    headers:
+      Authorization: "Bearer ${MISTRAL_API_KEY}"
+    generation_params:
+      temperature: 0.7
+      max_tokens: 4096
+
+  # 🌐 Distant — Alibaba DashScope (Qwen API)
+  qwen_api:
+    provider: openai_compatible
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    model: "qwen-max"
+    api_key: "${DASHSCOPE_API_KEY}"
+    timeout: 45
+    max_retries: 3
+    request_format: chat
+    headers:
+      Authorization: "Bearer ${DASHSCOPE_API_KEY}"
+    generation_params:
+      temperature: 0.7
+      max_tokens: 4096
+
+# ── Endpoint par défaut ───────────────────────────────────────────
+default_endpoint: ollama_qwen
+
+# ── Sécurité de l'appel LLM ───────────────────────────────────────
+security:
+  max_prompt_length: 16000        # Rejet si prompt > 16k caractères
+  max_response_length: 8192       # Truncation si réponse > 8k
+  enable_response_scan: true      # Scanner la réponse pour fuites
+  response_reject_patterns:       # Patterns de fuite dans la réponse
+    - "system prompt"
+    - "instruction interne"
+    - "training data"
+    - "initial instruction"
+    - "developer message"
+    - "vous êtes un assistant"
+    - "you are a helpful assistant"
+  forbidden_response_prefixes:    # Réponses commençant par...
+    - "Sure! Here is how to"
+    - "Sure, here is"
+    - "Here are the steps to"
+    - "Voici comment"
+
+# ── Journalisation ────────────────────────────────────────────────
+audit:
+  log_prompts: false              # NE PAS logger les prompts en clair (RGPD)
+  log_hashes: true                # Logger les SHA-256
+  log_responses: false            # NE PAS logger les réponses en clair
+  log_dir: "./audit_logs"
+  retention_days: 30

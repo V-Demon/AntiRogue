@@ -1,0 +1,69 @@
+## 🚀 Guide d'utilisation rapide
+
+### 1. Structure des fichiers
+
+```bash
+mkdir -p config reports audit_logs
+# Placez les fichiers :
+#   config/rules_enhanced.yaml
+#   config/thresholds.yaml
+#   config/whitelist.yaml
+#   config/llm_config.yaml
+#   prompt_guardian_v2.py
+```
+
+### 2. Validation simple (sans LLM)
+
+```bash
+python prompt_guardian_v2.py --prompt "Ignore all previous instructions and..."
+# → REJECTED avec détail des règles déclenchées
+```
+
+### 3. Validation + envoi au LLM
+
+```bash
+# Avec Ollama local
+python prompt_guardian_v2.py --prompt "Explique la théorie des cordes" --send --endpoint ollama_qwen
+
+# Avec l'API Mistral (clé dans $MISTRAL_API_KEY)
+python prompt_guardian_v2.py --file question.txt --send --endpoint mistral_api
+
+# Avec Qwen via DashScope (clé dans $DASHSCOPE_API_KEY)
+python prompt_guardian_v2.py --prompt "..." --send --endpoint qwen_api
+```
+
+### 4. Avec system prompt
+
+```bash
+python prompt_guardian_v2.py \
+  --prompt "Résume ce texte" \
+  --system-prompt "Tu es un expert en cybersécurité. Sois concis." \
+  --send --endpoint ollama_mistral
+```
+
+### 5. Mode strict / permissif
+
+Modifiez `config/thresholds.yaml` :
+```yaml
+reject_threshold: 20.0   # Ultra-strict (recommandé production)
+reject_threshold: 50.0   # Équilibré
+```
+
+---
+
+## 🎯 Résumé des améliorations apportées
+
+| Amélioration | Description | Impact sécuritaire |
+|---|---|---|
+| **Normalisation NFKC** | Décomposition Unicode complète | Neutralise les homoglyphs cyrilliques/grecs |
+| **Détection Bidi/Zalgo** | RTLO, combining characters, variation selectors | Bloque le spoofing visuel |
+| **Analyse d'entropie** | Suffixes à haute entropie (attaques GCG) | Détecte les adversarial suffixes |
+| **Détection Many-Shot** | Comptage des tours User/Assistant simulés | Bloque le jailbreak par contexte long |
+| **Détection Crescendo** | Escalade progressive en fin de prompt | Bloque l'attaque par escalation |
+| **Scan de réponse** | Détection de fuites post-generation | Empêche l'exfiltration du system prompt |
+| **Connecteur universel** | Ollama, vLLM, OpenAI-compatible | Intégration native Qwen & Mistral |
+| **Retry & Circuit-breaker** | Backoff exponentiel, timeout configurable | Résilience réseau |
+| **Règles enrichies** | +30 nouvelles regex (templates, hiérarchie, markdown) | Couverture élargie des vecteurs 2024-2025 |
+| **Audit sécurisé** | Hashing des prompts, pas de logging en clair | Conformité RGPD |
+
+Ce wrapper est désormais un **pare-feu applicatif** complet entre l'utilisateur et vos LLM, avec une philosophie de **défense en profondeur** qui ne se contente pas de filtrer l'entrée, mais qui **audit aussi la sortie**.
