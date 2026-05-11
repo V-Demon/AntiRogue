@@ -1,0 +1,25 @@
+# ═══════════════════════════════════════════════════════════════════
+#  PromptGuardian — thresholds.yaml
+#
+#  Contrôle la sensibilité globale du système.
+#  Le score total d'un prompt est la somme des scores de toutes les
+#  règles déclenchées. Si ce total ≥ reject_threshold → REJECTED.
+#
+#  CALIBRAGE RECOMMANDÉ :
+#    Mode ultra-strict    : reject_threshold: 20
+#    Mode strict (défaut) : reject_threshold: 30
+#    Mode équilibré       : reject_threshold: 50
+#    Mode permissif       : reject_threshold: 70
+#
+#  → Vous êtes en mode strict par défaut (préférence faux positifs).
+#    Abaissez reject_threshold pour encore plus de blocages.
+#    Montez-le si les faux positifs sont trop nombreux.
+# ═══════════════════════════════════════════════════════════════════
+
+reject_threshold: 30.0
+
+# ── Notes de calibrage (non utilisées par le code) ────────────────
+# Une seule règle CRITICAL (score ~50) suffira à rejeter.
+# Une seule règle HIGH     (score ~35-45) suffira à rejeter.
+# Deux règles MEDIUM       (score ~20-25 chacune) suffiront à rejeter.
+# Les règles LOW           (score ~8-15) nécessitent accumulation.

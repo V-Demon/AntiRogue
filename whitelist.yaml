@@ -1,0 +1,33 @@
+# ═══════════════════════════════════════════════════════════════════
+#  PromptGuardian — whitelist.yaml
+#
+#  Les prompts correspondant à ces entrées passent DIRECTEMENT
+#  sans analyse, quel que soit leur score.
+#
+#  ATTENTION : La whitelist est un bypass total.
+#  Utilisez-la uniquement pour des prompts connus et de confiance.
+#
+#  TYPES :
+#    exact_phrases : correspondance exacte (après normalisation)
+#    prefixes      : le prompt doit COMMENCER par ce texte (normalisé)
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Correspondances exactes ────────────────────────────────────────
+# Ajoutez ici des prompts système connus (templates fixes de votre app).
+exact_phrases: []
+  # Exemples (décommenter et adapter) :
+  # - "summarize the following document:"
+  # - "translate this text to french:"
+
+# ── Préfixes approuvés ────────────────────────────────────────────
+# Tout prompt commençant par un de ces textes est autorisé.
+prefixes: []
+  # Exemples :
+  # - "you are a helpful assistant for"
+  # - "context: threat intelligence report"
+
+# ── Notes ─────────────────────────────────────────────────────────
+# Pour corriger un faux positif identifié dans un rapport JSON :
+#   1. Notez le texte du prompt (champ implicite ou prompt_hash)
+#   2. Ajoutez la phrase ou son préfixe ici
+#   3. Relancez — le prompt sera autorisé immédiatement
